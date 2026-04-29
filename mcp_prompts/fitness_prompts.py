@@ -1,17 +1,17 @@
 """MCP Prompts for the Personal Fitness Assistant."""
 
 from __future__ import annotations
-from mcp.types import Message, PromptMessage, TextContent
+from mcp.types import PromptMessage, TextContent, Message
 
 
-def hydration_planner_prompt(weight_kg: str, workout_minutes: str) -> list[PromptMessage]:
+def hydration_planner_prompt(weight_kg: str, workout_minutes: str) -> list[Message]:
     """
     Dynamic prompt for daily hydration suggestions.
     Role: Sports Nutritionist.
     Uses: hydration_guide resource.
     """
     return [
-        PromptMessage(
+        Message(PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
@@ -22,18 +22,18 @@ def hydration_planner_prompt(weight_kg: str, workout_minutes: str) -> list[Promp
                     f"Give me a practical daily hydration plan with specific beverage recommendations."
                 )
             )
-        )
+        ))
     ]
 
 
-def sweat_analysis_prompt(workout_duration_min: str, intensity_level: str) -> list[PromptMessage]:
+def sweat_analysis_prompt(workout_duration_min: str, intensity_level: str) -> list[Message]:
     """
     Dynamic prompt for post-workout mineral loss analysis.
     Role: Performance Nutritionist.
     Uses: electrolyte_directory resource.
     """
     return [
-        PromptMessage(
+        Message(PromptMessage(
             role="user",
             content=TextContent(
                 type="text",
@@ -44,7 +44,7 @@ def sweat_analysis_prompt(workout_duration_min: str, intensity_level: str) -> li
                     f"and what recovery meal do you recommend to replenish them?"
                 )
             )
-        )
+        ))
     ]
 
 
