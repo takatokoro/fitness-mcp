@@ -1,0 +1,4 @@
+intensity,sweat_rate_L_per_hr,sodium_mg,potassium_mg,magnesium_mg
+low,0.5,450,100,18
+moderate,1.0,900,200,36
+high,1.5,1350,300,54
