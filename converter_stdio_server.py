@@ -3,7 +3,8 @@ from pathlib import Path
 
 from fastmcp import FastMCP
 
-from mcp_tools.converter_tools import TOOL_DEFINITIONS
+
+from mcp_tools import TOOL_DEFINITIONS
 from mcp_resources.converter_resources import RESOURCE_DEFINITIONS
 from mcp_prompts.converter_prompts import PROMPT_DEFINITIONS
 

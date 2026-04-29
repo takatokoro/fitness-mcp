@@ -1,5 +1,9 @@
+"""STDIO Server for the Personal Fitness Assistant MCP."""
+
+import json
 from fastmcp import FastMCP
-from mcp_tools.fitness_tools import TOOL_DEFINITIONS
+
+from mcp_tools import TOOL_DEFINITIONS
 from mcp_resources.fitness_resources import RESOURCE_DEFINITIONS
 
 mcp = FastMCP("Personal Fitness Assistant (STDIO)")
@@ -13,7 +17,6 @@ for tool in TOOL_DEFINITIONS:
 
 # --- Register resources ---
 for resource in RESOURCE_DEFINITIONS:
-    import json
     uri = f"resource://{resource['name']}"
     display_name = resource.get("description", resource["name"])
     mime = resource.get("mime_type", "application/json")
