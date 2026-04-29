@@ -5,8 +5,10 @@ from fastmcp import FastMCP
 
 from mcp_tools import TOOL_DEFINITIONS
 from mcp_resources.fitness_resources import RESOURCE_DEFINITIONS
+from mcp_prompts.fitness_prompts import PROMPT_DEFINITIONS
 
 mcp = FastMCP("Personal Fitness Assistant (STDIO)")
+
 
 # --- Register tools ---
 for tool in TOOL_DEFINITIONS:
@@ -14,6 +16,7 @@ for tool in TOOL_DEFINITIONS:
         name=tool["name"],
         description=tool.get("description", tool["name"])
     )(tool["func"])
+
 
 # --- Register resources ---
 for resource in RESOURCE_DEFINITIONS:
@@ -31,6 +34,15 @@ for resource in RESOURCE_DEFINITIONS:
             return json.dumps(result)
 
     register_resource(uri, display_name, mime, resource_function)
+
+
+# --- Register prompts ---
+for prompt in PROMPT_DEFINITIONS:
+    name = prompt["name"]
+    desc = prompt.get("description", name)
+    prompt_function = prompt["func"]
+    mcp.prompt(name=name, description=desc)(prompt_function)
+
 
 if __name__ == "__main__":
     mcp.run()

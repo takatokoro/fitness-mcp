@@ -20,7 +20,7 @@ def calculate_water_intake(weight_kg: float, workout_minutes: int) -> dict:
 
     total_litres = round(base_litres + exercise_litres, 2)
 
-    # BUG: returning wrong key name - "daily_target" instead of "total_daily_target_litres"
+    
     return {
         "weight_kg": weight_kg,
         "workout_minutes": workout_minutes,
