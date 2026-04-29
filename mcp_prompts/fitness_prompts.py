@@ -1,7 +1,8 @@
 """MCP Prompts for the Personal Fitness Assistant."""
 
 from __future__ import annotations
-from mcp.types import PromptMessage, TextContent, Message
+from fastmcp.prompts import Message
+from mcp.types import PromptMessage, TextContent
 
 
 def hydration_planner_prompt(weight_kg: str, workout_minutes: str) -> list[Message]:
