@@ -4,7 +4,7 @@ import csv
 from pathlib import Path
 
 # Path to the CSV data file
-DATA_FILE = Path(__file__).parent / "data" / "sweat_minerals.csv"
+DATA_FILE = Path(__file__).parent.parent / "data" / "sweat_minerals.csv"
 
 
 def estimate_sweat_loss(workout_duration_min: int, intensity_level: str) -> dict:
@@ -38,9 +38,9 @@ def estimate_sweat_loss(workout_duration_min: int, intensity_level: str) -> dict
     sweat_rate = float(row["sweat_rate_L_per_hr"])
     litres_lost = round((workout_duration_min / 60) * sweat_rate, 2)
 
-    sodium_lost = round(litres_lost * float(row["sodium_mg_per_L"]), 1)
-    potassium_lost = round(litres_lost * float(row["potassium_mg_per_L"]), 1)
-    magnesium_lost = round(litres_lost * float(row["magnesium_mg_per_L"]), 1)
+    sodium_lost = round(litres_lost * float(row["sodium_mg"]), 1)
+    potassium_lost = round(litres_lost * float(row["potassium_mg"]), 1)
+    magnesium_lost = round(litres_lost * float(row["magnesium_mg"]), 1)
 
     return {
         "version": "v1 - CSV",
