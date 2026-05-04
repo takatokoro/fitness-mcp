@@ -3,9 +3,9 @@
 import json
 from fastmcp import FastMCP
 
-from mcp_tools import TOOL_DEFINITIONS
-from mcp_resources.fitness_resources import RESOURCE_DEFINITIONS
+from mcp_resources.fitness_resources import hydration_guide, electrolyte_directory
 from mcp_prompts.fitness_prompts import PROMPT_DEFINITIONS
+from mcp_tools import TOOL_DEFINITIONS
 
 mcp = FastMCP("Personal Fitness Assistant (STDIO)")
 
@@ -18,22 +18,15 @@ for tool in TOOL_DEFINITIONS:
     )(tool["func"])
 
 
-# --- Register resources ---
-for resource in RESOURCE_DEFINITIONS:
-    uri = f"resource://{resource['name']}"
-    display_name = resource.get("description", resource["name"])
-    mime = resource.get("mime_type", "application/json")
-    resource_function = resource["func"]
+# --- Register resources individually ---
+@mcp.resource("resource://hydration_guide", name="Hydration Guide", mime_type="application/json")
+def _hydration_guide():
+    return json.dumps(hydration_guide())
 
-    def register_resource(uri, name, mime, fn):
-        @mcp.resource(uri, name=name, mime_type=mime)
-        def _resource():
-            result = fn()
-            if isinstance(result, (str, bytes)):
-                return result
-            return json.dumps(result)
 
-    register_resource(uri, display_name, mime, resource_function)
+@mcp.resource("resource://electrolyte_directory", name="Electrolyte Directory", mime_type="application/json")
+def _electrolyte_directory():
+    return json.dumps(electrolyte_directory())
 
 
 # --- Register prompts ---
