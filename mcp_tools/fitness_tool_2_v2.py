@@ -1,4 +1,4 @@
-"""MCP Tool 2 - Estimate Sweat Loss (Version 2 - API Ninjas)."""
+"""MCP Tool 2 (version 2) - Estimate Sweat Loss (Version 2 - API Ninjas)."""
 
 import os
 import httpx
@@ -8,6 +8,13 @@ load_dotenv()
 
 API_KEY = os.getenv("API_NINJAS_KEY")
 API_URL = "https://api.api-ninjas.com/v1/nutrition"
+
+# Recovery foods by intensity level (5 foods each)
+RECOVERY_FOODS = {
+    "low": ["banana", "orange", "watermelon", "yogurt", "milk"],
+    "moderate": ["sweet potato", "banana", "eggs", "brown rice", "avocado"],
+    "high": ["salted nuts", "protein bar", "chocolate milk", "quinoa", "salmon"]
+}
 
 
 def estimate_sweat_loss_v2(workout_duration_min: int, intensity_level: str) -> dict:
@@ -36,30 +43,42 @@ def estimate_sweat_loss_v2(workout_duration_min: int, intensity_level: str) -> d
     potassium_lost = round(litres_lost * 200, 1)
     magnesium_lost = round(litres_lost * 36, 1)
 
-    # Fetch real nutrition data from API Ninjas
-    recovery_food = "banana"
+    # Get recovery foods for this intensity level
+    foods_to_lookup = RECOVERY_FOODS[intensity_level.lower()]
     headers = {"X-Api-Key": API_KEY}
-    params = {"query": recovery_food}
 
-    try:
-        response = httpx.get(API_URL, headers=headers, params=params, timeout=10)
-        response.raise_for_status()
-        nutrition_data = response.json()
+    recovery_foods_data = []
 
-        if nutrition_data:
-            food = nutrition_data[0]
-            food_info = {
-                "food": food.get("name", recovery_food),
-                "calories": food.get("calories", 0),
-                "protein_g": food.get("protein_g", 0),
-                "potassium_mg": food.get("potassium_mg", 0),
-                "sodium_mg": food.get("sodium_mg", 0),
-            }
-        else:
-            food_info = {"error": "No nutrition data found"}
+    for food_name in foods_to_lookup:
+        try:
+            response = httpx.get(
+                API_URL,
+                headers=headers,
+                params={"query": food_name},
+                timeout=10
+            )
+            response.raise_for_status()
+            nutrition_data = response.json()
 
-    except Exception as e:
-        food_info = {"error": str(e)}
+            if nutrition_data:
+                food = nutrition_data[0]
+                recovery_foods_data.append({
+                    "food": food.get("name", food_name),
+                    "potassium_mg": food.get("potassium_mg", 0),
+                    "sodium_mg": food.get("sodium_mg", 0),
+                    "magnesium_mg": food.get("magnesium_mg", 0),
+    })
+            else:
+                recovery_foods_data.append({
+                    "food": food_name,
+                    "error": "No data found"
+                })
+
+        except Exception as e:
+            recovery_foods_data.append({
+                "food": food_name,
+                "error": str(e)
+            })
 
     return {
         "version": "v2 - API Ninjas",
@@ -70,6 +89,6 @@ def estimate_sweat_loss_v2(workout_duration_min: int, intensity_level: str) -> d
         "potassium_lost_mg": potassium_lost,
         "magnesium_lost_mg": magnesium_lost,
         "recommended_replacement_litres": round(litres_lost * 1.5, 2),
-        "recovery_food_data": food_info,
+        "recovery_foods": recovery_foods_data,
         "data_source": "API Ninjas Nutrition API"
     }
