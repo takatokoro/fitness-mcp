@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from fastmcp.prompts import Message
-from mcp.types import PromptMessage, TextContent
 
 
 def hydration_planner_prompt(weight_kg: str, workout_minutes: str) -> list[Message]:
@@ -12,18 +11,15 @@ def hydration_planner_prompt(weight_kg: str, workout_minutes: str) -> list[Messa
     Uses: hydration_guide resource.
     """
     return [
-        Message(PromptMessage(
+        Message(
             role="user",
-            content=TextContent(
-                type="text",
-                text=(
-                    f"You are an experienced Sports Nutritionist. "
-                    f"I weigh {weight_kg}kg and worked out for {workout_minutes} minutes today. "
-                    f"Using the hydration guide beverage data, what should I drink today and how much? "
-                    f"Give me a practical daily hydration plan with specific beverage recommendations."
-                )
+            content=(
+                f"You are an experienced Sports Nutritionist. "
+                f"I weigh {weight_kg}kg and worked out for {workout_minutes} minutes today. "
+                f"Using the hydration guide beverage data, what should I drink today and how much? "
+                f"Give me a practical daily hydration plan with specific beverage recommendations."
             )
-        ))
+        )
     ]
 
 
@@ -34,18 +30,15 @@ def sweat_analysis_prompt(workout_duration_min: str, intensity_level: str) -> li
     Uses: electrolyte_directory resource.
     """
     return [
-        Message(PromptMessage(
+        Message(
             role="user",
-            content=TextContent(
-                type="text",
-                text=(
-                    f"You are a Performance Nutritionist specialising in post-workout recovery. "
-                    f"I just finished a {workout_duration_min} minute {intensity_level} intensity workout. "
-                    f"Based on the electrolyte directory mineral loss data, what minerals did I lose "
-                    f"and what recovery meal do you recommend to replenish them?"
-                )
+            content=(
+                f"You are a Performance Nutritionist specialising in post-workout recovery. "
+                f"I just finished a {workout_duration_min} minute {intensity_level} intensity workout. "
+                f"Based on the electrolyte directory mineral loss data, what minerals did I lose "
+                f"and what recovery meal do you recommend to replenish them?"
             )
-        ))
+        )
     ]
 
 
