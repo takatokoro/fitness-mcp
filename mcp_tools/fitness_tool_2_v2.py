@@ -29,11 +29,11 @@ def estimate_sweat_loss_v2(workout_duration_min: int, intensity_level: str) -> d
     workout_duration_min = request.workout_duration_min
     intensity_level = request.intensity_level
     
-    # rest of your existing code stays the same...    """
+    """
     Estimate fluid and mineral loss during a workout.
     Fetches recovery food nutrition data from API Ninjas (Version 2).
 
-    Args:
+    User input:
         workout_duration_min: Duration of workout in minutes.
         intensity_level: Intensity of workout - low, moderate, or high.
 
