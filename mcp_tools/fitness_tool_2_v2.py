@@ -4,6 +4,12 @@ import os
 import httpx
 from dotenv import load_dotenv
 
+#Class for pydantic
+from pydantic import BaseModel, Field
+
+class SweatLossV2Request(BaseModel):
+    workout_duration_min: int = Field(..., ge=1, le=480, description="Workout duration in minutes, 1-480")
+    intensity_level: str = Field(..., description="Intensity level: low, moderate, or high")
 load_dotenv()
 
 API_KEY = os.getenv("API_NINJAS_KEY")
@@ -18,7 +24,12 @@ RECOVERY_FOODS = {
 
 
 def estimate_sweat_loss_v2(workout_duration_min: int, intensity_level: str) -> dict:
-    """
+    # Pydantic for input validation
+    request = SweatLossV2Request(workout_duration_min=workout_duration_min, intensity_level=intensity_level)
+    workout_duration_min = request.workout_duration_min
+    intensity_level = request.intensity_level
+    
+    # rest of your existing code stays the same...    """
     Estimate fluid and mineral loss during a workout.
     Fetches recovery food nutrition data from API Ninjas (Version 2).
 

@@ -3,11 +3,24 @@
 import csv
 from pathlib import Path
 
+from pydantic import BaseModel, Field
+
+
+class SweatLossRequest(BaseModel):
+    workout_duration_min: int = Field(..., ge=1, le=480, description="Workout duration in minutes, 1-480")
+    intensity_level: str = Field(..., description="Intensity level: low, moderate, or high")
+
 # Path to the CSV data file
 DATA_FILE = Path(__file__).parent.parent / "data" / "sweat_minerals.csv"
 
 
 def estimate_sweat_loss(workout_duration_min: int, intensity_level: str) -> dict:
+    # Input Validation using Pydantic
+    request = SweatLossRequest(workout_duration_min=workout_duration_min, intensity_level=intensity_level)
+    workout_duration_min = request.workout_duration_min
+    intensity_level = request.intensity_level
+    
+    # rest of your existing code stays the same...
     """
     Estimate fluid and mineral loss during a workout.
     Reads mineral data from a local CSV file (Version 1).
