@@ -1,9 +1,8 @@
-# Sweat loss logic and HTTP endpoints (v2 - API Ninjas) are defined here so
-# they can be reused by both the FastAPI app and the MCP tool registrations.
+#Tool 2 using API to get food nutrition data
 
-import os
-import httpx
-from dotenv import load_dotenv
+import os  #reads environment variables (my API key)
+import httpx #makes HTTP requests to API Ninjas
+from dotenv import load_dotenv  #loads my .env file so os.getenv can find the API key
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
@@ -23,21 +22,19 @@ RECOVERY_FOODS = {
 }
 
 
-# --- Pydantic model ----------------------------------------------------------
-
+#Pydantic model
 class SweatLossV2Request(BaseModel):
     workout_duration_min: int = Field(..., ge=1, le=480, description="Workout duration in minutes, 1-480")
     intensity_level: str = Field(..., description="Intensity level: low, moderate, or high")
 
 
-# --- Core logic function -----------------------------------------------------
-
+#Function for Tool2 v2
 def estimate_sweat_loss_v2_value(workout_duration_min: int, intensity_level: str) -> dict:
     """
     Estimate fluid and mineral loss during a workout.
     Fetches recovery food nutrition data from API Ninjas (Version 2).
 
-    Args:
+    User Input:
         workout_duration_min: Duration of workout in minutes.
         intensity_level: Intensity of workout - low, moderate, or high.
 
@@ -89,7 +86,7 @@ def estimate_sweat_loss_v2_value(workout_duration_min: int, intensity_level: str
                 })
             else:
                 recovery_foods_data.append({"food": food_name, "error": "No data found"})
-
+#error handling
         except Exception as exc:
             recovery_foods_data.append({"food": food_name, "error": str(exc)})
 
