@@ -9,6 +9,10 @@ from mcp_tools import water_intake_router, sweat_loss_router, sweat_loss_v2_rout
 from mcp_resources.fitness_resources import hydration_guide, electrolyte_directory
 from mcp_prompts.fitness_prompts import PROMPT_DEFINITIONS
 
+import logging
+from pathlib import Path
+from utils.logging_utils import build_log_config, configure_logging
+
 PORT = 8003
 
 # FastAPI app for plain HTTP
@@ -20,6 +24,21 @@ app = FastAPI(
 app.include_router(water_intake_router)
 app.include_router(sweat_loss_router)
 app.include_router(sweat_loss_v2_router)
+
+LOG_FILE = Path("./logs/mcp_log_streamable_http.log")
+configure_logging(
+    build_log_config(
+        LOG_FILE,
+        console=True,
+        logger_handlers={
+            "fastmcp": ["rotating_file", "console"],
+            "uvicorn": ["rotating_file", "console"],
+        },
+        root_level="INFO",
+        logger_level="DEBUG",
+    )
+)
+logger = logging.getLogger(__name__)
 
 # FastMCP server generated from FastAPI OpenAPI (tools) plus manual resources/prompts
 mcp = FastMCP.from_fastapi(
@@ -39,7 +58,15 @@ def _resource_hydration_guide():
 def _resource_electrolyte_directory():
     return json.dumps(electrolyte_directory())
 
-
+@mcp.resource("resource://server_logs", name="Server Logs", mime_type="text/plain")
+def _server_logs():
+    """Exposes recent server log entries for AI agents to read."""
+    log_path = Path("./logs/mcp_log_streamable_http.log")
+    if not log_path.exists():
+        return "No log entries yet."
+    with open(log_path, encoding="utf-8") as f:
+        lines = f.readlines()
+    return "".join(lines[-50:])
 # --- Prompts -----------------------------------------------------------------
 
 for prompt in PROMPT_DEFINITIONS:
