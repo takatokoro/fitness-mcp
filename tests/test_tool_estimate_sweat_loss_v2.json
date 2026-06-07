@@ -1,0 +1,15 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "estimate_sweat_loss_v2",
+      "arguments": {
+        "workout_duration_min": 60,
+        "intensity_level": "high"
+      }
+    }
+  },
+  "response": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"version\\\":\\\"v2 - API Ninjas\\\",\\\"workout_duration_min\\\":60,\\\"intensity_level\\\":\\\"high\\\",\\\"fluid_lost_litres\\\":1.5,\\\"sodium_lost_mg\\\":1350.0,\\\"potassium_lost_mg\\\":300.0,\\\"magnesium_lost_mg\\\":54.0,\\\"recommended_replacement_litres\\\":2.25,\\\"recovery_foods\\\":[{\\\"food\\\":\\\"nuts\\\",\\\"potassium_mg\\\":457,\\\"sodium_mg\\\":277,\\\"magnesium_mg\\\":0},{\\\"food\\\":\\\"protein bar\\\",\\\"potassium_mg\\\":608,\\\"sodium_mg\\\":220,\\\"magnesium_mg\\\":0},{\\\"food\\\":\\\"chocolate milk\\\",\\\"potassium_mg\\\":102,\\\"sodium_mg\\\":60,\\\"magnesium_mg\\\":0},{\\\"food\\\":\\\"quinoa\\\",\\\"potassium_mg\\\":152,\\\"sodium_mg\\\":6,\\\"magnesium_mg\\\":0},{\\\"food\\\":\\\"salmon\\\",\\\"potassium_mg\\\":253,\\\"sodium_mg\\\":61,\\\"magnesium_mg\\\":0}],\\\"data_source\\\":\\\"API Ninjas Nutrition API\\\"}\"}],\"structuredContent\":{\"version\":\"v2 - API Ninjas\",\"workout_duration_min\":60,\"intensity_level\":\"high\",\"fluid_lost_litres\":1.5,\"sodium_lost_mg\":1350.0,\"potassium_lost_mg\":300.0,\"magnesium_lost_mg\":54.0,\"recommended_replacement_litres\":2.25,\"recovery_foods\":[{\"food\":\"nuts\",\"potassium_mg\":457,\"sodium_mg\":277,\"magnesium_mg\":0},{\"food\":\"protein bar\",\"potassium_mg\":608,\"sodium_mg\":220,\"magnesium_mg\":0},{\"food\":\"chocolate milk\",\"potassium_mg\":102,\"sodium_mg\":60,\"magnesium_mg\":0},{\"food\":\"quinoa\",\"potassium_mg\":152,\"sodium_mg\":6,\"magnesium_mg\":0},{\"food\":\"salmon\",\"potassium_mg\":253,\"sodium_mg\":61,\"magnesium_mg\":0}],\"data_source\":\"API Ninjas Nutrition API\"},\"isError\":false}}\r\n\r\n"
+}

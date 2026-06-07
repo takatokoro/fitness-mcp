@@ -1,0 +1,11 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "resources/read",
+    "params": {
+      "uri": "resource://electrolyte_directory"
+    }
+  },
+  "response": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":5,\"result\":{\"contents\":[{\"uri\":\"resource://electrolyte_directory\",\"mimeType\":\"application/json\",\"text\":\"{\\\"id\\\": \\\"electrolyte-directory\\\", \\\"title\\\": \\\"Electrolyte Loss and Recovery Directory\\\", \\\"minerals\\\": [{\\\"name\\\": \\\"Sodium\\\", \\\"lost_per_litre_sweat_mg\\\": 900, \\\"role\\\": \\\"Fluid balance and nerve function\\\", \\\"recovery_foods\\\": [\\\"Salted nuts\\\", \\\"Pretzels\\\", \\\"Pickle juice\\\", \\\"Table salt\\\"]}, {\\\"name\\\": \\\"Potassium\\\", \\\"lost_per_litre_sweat_mg\\\": 200, \\\"role\\\": \\\"Muscle contraction and heart function\\\", \\\"recovery_foods\\\": [\\\"Banana\\\", \\\"Sweet potato\\\", \\\"Avocado\\\", \\\"Spinach\\\"]}, {\\\"name\\\": \\\"Magnesium\\\", \\\"lost_per_litre_sweat_mg\\\": 36, \\\"role\\\": \\\"Muscle recovery and energy production\\\", \\\"recovery_foods\\\": [\\\"Dark chocolate\\\", \\\"Almonds\\\", \\\"Pumpkin seeds\\\", \\\"Brown rice\\\"]}]}\"}]}}\r\n\r\n"
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 6,
+    "method": "prompts/get",
+    "params": {
+      "name": "hydration_planner",
+      "arguments": {
+        "weight_kg": "75",
+        "workout_minutes": "45"
+      }
+    }
+  },
+  "response": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":6,\"result\":{\"description\":\"Sports Nutritionist providing personalised daily hydration suggestions.\",\"messages\":[{\"role\":\"user\",\"content\":{\"type\":\"text\",\"text\":\"You are an experienced Sports Nutritionist. I weigh 75kg and worked out for 45 minutes today. Using the hydration guide beverage data, what should I drink today and how much? Give me a practical daily hydration plan with specific beverage recommendations.\"}}]}}\r\n\r\n"
+}

@@ -1,0 +1,15 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "calculate_water_intake",
+      "arguments": {
+        "weight_kg": 75,
+        "workout_minutes": 45
+      }
+    }
+  },
+  "response": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"weight_kg\\\":75.0,\\\"workout_minutes\\\":45,\\\"base_intake_litres\\\":2.1,\\\"exercise_intake_litres\\\":0.75,\\\"tota_daily_target_intake\\\":2.85,\\\"recommendation\\\":\\\"Drink at least 2.85L of water today.\\\"}\"}],\"structuredContent\":{\"weight_kg\":75.0,\"workout_minutes\":45,\"base_intake_litres\":2.1,\"exercise_intake_litres\":0.75,\"tota_daily_target_intake\":2.85,\"recommendation\":\"Drink at least 2.85L of water today.\"},\"isError\":false}}\r\n\r\n"
+}

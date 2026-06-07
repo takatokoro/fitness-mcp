@@ -1,0 +1,15 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "prompts/get",
+    "params": {
+      "name": "sweat_analysis",
+      "arguments": {
+        "workout_duration_min": "60",
+        "intensity_level": "moderate"
+      }
+    }
+  },
+  "response": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":7,\"result\":{\"description\":\"Performance Nutritionist explaining mineral loss and suggesting recovery meals.\",\"messages\":[{\"role\":\"user\",\"content\":{\"type\":\"text\",\"text\":\"You are a Performance Nutritionist specialising in post-workout recovery. I just finished a 60 minute moderate intensity workout. Based on the electrolyte directory mineral loss data, what minerals did I lose and what recovery meal do you recommend to replenish them?\"}}]}}\r\n\r\n"
+}

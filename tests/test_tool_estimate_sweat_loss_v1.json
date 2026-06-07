@@ -1,0 +1,15 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/call",
+    "params": {
+      "name": "estimate_sweat_loss",
+      "arguments": {
+        "workout_duration_min": 60,
+        "intensity_level": "moderate"
+      }
+    }
+  },
+  "response": "event: message\r\ndata: {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"content\":[{\"type\":\"text\",\"text\":\"{\\\"version\\\":\\\"v1 - CSV\\\",\\\"workout_duration_min\\\":60,\\\"intensity_level\\\":\\\"moderate\\\",\\\"fluid_lost_litres\\\":1.0,\\\"sodium_lost_mg\\\":900.0,\\\"potassium_lost_mg\\\":200.0,\\\"magnesium_lost_mg\\\":36.0,\\\"recommended_replacement_litres\\\":1.5,\\\"data_source\\\":\\\"sweat_minerals.csv\\\"}\"}],\"structuredContent\":{\"version\":\"v1 - CSV\",\"workout_duration_min\":60,\"intensity_level\":\"moderate\",\"fluid_lost_litres\":1.0,\"sodium_lost_mg\":900.0,\"potassium_lost_mg\":200.0,\"magnesium_lost_mg\":36.0,\"recommended_replacement_litres\":1.5,\"data_source\":\"sweat_minerals.csv\"},\"isError\":false}}\r\n\r\n"
+}
