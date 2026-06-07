@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: fitness-mcp
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python fitness_streamable_http_server.py
+    healthCheckPath: /health
+    envVars:
+      - key: API_NINJAS_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: mistralai/mistral-7b-instruct
+      - key: OPENROUTER_BASE_URL
+        value: https://openrouter.ai/api/v1

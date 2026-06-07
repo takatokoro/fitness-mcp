@@ -1,4 +1,7 @@
 fastmcp
 fastapi
 uvicorn
-dotenv
+httpx
+python-dotenv
+pytest
+pytest-asyncio
