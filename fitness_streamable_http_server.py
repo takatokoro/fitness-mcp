@@ -17,6 +17,7 @@ from mcp_tools import (
 )
 from mcp_resources.fitness_resources import hydration_guide, electrolyte_directory, weather_context
 from mcp_prompts.fitness_prompts import PROMPT_DEFINITIONS
+from routes.auth_routes import router as auth_router
 
 PORT = int(os.getenv("PORT", 8003))
 
@@ -39,15 +40,20 @@ app = FastAPI(
     title="Personal Fitness Assistant MCP Server",
     description=(
         "FastAPI endpoints auto-exposed as MCP tools via FastMCP. "
-        "Includes hydration, sweat loss, and weather-adjusted hydration tools."
+        "Includes hydration, sweat loss, weather-adjusted hydration tools, "
+        "and JWT authentication."
     ),
     version="2.0.0",
 )
 
+# Fitness tool routes
 app.include_router(water_intake_router)
 app.include_router(sweat_loss_router)
 app.include_router(sweat_loss_v2_router)
 app.include_router(weather_hydration_router)
+
+# Auth routes (/register and /login)
+app.include_router(auth_router)
 
 
 @app.get("/health", tags=["health"])
