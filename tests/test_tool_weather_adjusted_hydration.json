@@ -1,0 +1,40 @@
+{
+  "request": {
+    "jsonrpc": "2.0",
+    "id": "taka",
+    "method": "tools/call",
+    "params": {
+      "name": "weather_adjusted_hydration",
+      "arguments": {
+        "weight_kg": 75,
+        "workout_minutes": 60,
+        "city": "Perth"
+      }
+    }
+  },
+  "response": {
+    "weight_kg": 75.0,
+    "workout_minutes": 60,
+    "location": {
+      "input_city": "Perth",
+      "resolved_city": "Perth",
+      "country": "Australia",
+      "latitude": -31.95224,
+      "longitude": 115.8614
+    },
+    "base_intake_litres": 1.88,
+    "exercise_intake_litres": 1.0,
+    "base_total_litres": 2.88,
+    "weather": {
+      "temperature_celsius": 19.3,
+      "relative_humidity_percent": 77,
+      "source": "Open-Meteo"
+    },
+    "heat_adjustment_litres": 0.0,
+    "humidity_adjustment_litres": 0.2,
+    "total_adjustment_litres": 0.2,
+    "adjusted_daily_target_litres": 3.08,
+    "recommendation": "Drink at least 3.08L today in Perth. (19.3degC, 77% humidity)",
+    "notes": "No heat adjustment because temperature (19.3C) is below 25C threshold. Humidity adjustment of +0.2L applied because humidity (77%) exceeds 60% threshold."
+  }
+}
