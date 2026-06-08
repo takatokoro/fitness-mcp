@@ -15,7 +15,7 @@ from mcp_tools import (
     sweat_loss_v2_router,
     weather_hydration_router,
 )
-from mcp_resources.fitness_resources import hydration_guide, electrolyte_directory
+from mcp_resources.fitness_resources import hydration_guide, electrolyte_directory, weather_context
 from mcp_prompts.fitness_prompts import PROMPT_DEFINITIONS
 
 PORT = int(os.getenv("PORT", 8003))
@@ -84,6 +84,12 @@ def _server_logs():
     with open(log_path, encoding="utf-8") as f:
         lines = f.readlines()
     return "".join(lines[-50:])
+
+
+@mcp.resource("resource://weather_context", name="Weather Context", mime_type="application/json")
+def _resource_weather_context():
+    """Most recent weather data fetched by Tool 3. Call /weather-adjusted-hydration first."""
+    return json.dumps(weather_context())
 
 
 # Prompts
