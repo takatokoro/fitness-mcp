@@ -18,10 +18,12 @@ MONGODB_URL = os.getenv("MONGODB_URL", "")
 
 if not MONGODB_URL:
     logger.warning("MONGODB_URL not set — database features will not work.")
-
-# Single shared client — Motor reuses connections automatically
-client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL) if MONGODB_URL else None
-
-# The 'fitness' database — collection 'users' stores registered accounts
-db = client["fitness"] if client else None
-users_collection = db["users"] if db else None
+    client = None
+    db = None
+    users_collection = None
+else:
+    # Single shared client — Motor reuses connections automatically
+    client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL)
+    # The 'fitness' database — collection 'users' stores registered accounts
+    db = client["fitness"]
+    users_collection = db["users"]
