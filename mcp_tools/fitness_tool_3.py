@@ -1,4 +1,4 @@
-"""Tool 3 — Weather-Adjusted Hydration Calculator.
+﻿"""Tool 3 — Weather-Adjusted Hydration Calculator.
 
 Accepts a city name (e.g. "Perth") instead of raw coordinates.
 Geocoding is handled by services/weather_service.py via the free
@@ -111,7 +111,7 @@ def weather_adjusted_hydration_value(
         "adjusted_daily_target_litres": adjusted_total,
         "recommendation": (
             f"Drink at least {adjusted_total}L today in {coords['resolved_city']}. "
-            f"({temperature}°C, {humidity}% humidity)"
+            f"({temperature}\u00b0C, {humidity}% humidity)"
         ),
     }
 
@@ -160,3 +160,4 @@ TOOL_DEFINITIONS = [
         "tags": {"fitness", "hydration", "weather"},
     },
 ]
+
