@@ -1,8 +1,10 @@
-﻿"""Tool 3 — Weather-Adjusted Hydration Calculator.
+"""Tool 3 — Weather-Adjusted Hydration Calculator.
 
 Accepts a city name (e.g. "Perth") instead of raw coordinates.
 Geocoding is handled by services/weather_service.py via the free
 Open-Meteo geocoding API — no API key required.
+After each call, updates the weather_context resource in memory
+so Prompt 3 (ai_fitness_summary) can read current conditions.
 """
 
 import logging
@@ -11,6 +13,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from services.weather_service import get_coordinates, get_current_weather
+from mcp_resources.fitness_resources import update_weather_context
 
 logger = logging.getLogger(__name__)
 
@@ -36,26 +39,18 @@ def weather_adjusted_hydration_value(
     Calculate weather-adjusted daily water intake target from a city name.
 
     Steps:
-      1. Geocode city name → coordinates (Open-Meteo geocoding, free)
+      1. Geocode city name -> coordinates (Open-Meteo geocoding, free)
       2. Fetch live weather at those coordinates (Open-Meteo forecast, free)
       3. Apply hydration formula with weather adjustments
+      4. Update weather_context resource in memory
 
     Base formula (from Tool 1):
       - 0.025L per kg body weight
       - 1L per 60 minutes of exercise
 
     Weather adjustments:
-      - Temperature above 25°C: +0.1L per degree above 25
+      - Temperature above 25C: +0.1L per degree above 25
       - Humidity above 60%: +0.2L flat bonus
-
-    Args:
-        weight_kg: User's body weight in kilograms.
-        workout_minutes: Duration of workout in minutes.
-        city: City name as a plain string.
-
-    Returns:
-        Dictionary with base target, resolved location, weather data,
-        adjustments, and final target.
     """
     request = WeatherHydrationRequest(
         weight_kg=weight_kg,
@@ -63,15 +58,15 @@ def weather_adjusted_hydration_value(
         city=city,
     )
 
-    # Step 1 — Geocode city to coordinates
+    # Step 1 - Geocode city to coordinates
     coords = get_coordinates(request.city)
 
-    # Step 2 — Fetch live weather
+    # Step 2 - Fetch live weather
     weather = get_current_weather(coords["latitude"], coords["longitude"])
     temperature = weather["temperature_celsius"]
     humidity = weather["relative_humidity_percent"]
 
-    # Step 3 — Base intake (same formula as Tool 1)
+    # Step 3 - Base intake (same formula as Tool 1)
     base_litres = round(request.weight_kg * 0.025, 2)
     exercise_litres = round(request.workout_minutes / 60, 2)
     base_total = round(base_litres + exercise_litres, 2)
@@ -85,6 +80,13 @@ def weather_adjusted_hydration_value(
 
     total_adjustment = round(heat_adjustment + humidity_adjustment, 2)
     adjusted_total = round(base_total + total_adjustment, 2)
+
+    # Step 4 - Update weather_context resource for Prompt 3
+    update_weather_context(
+        city=coords["resolved_city"],
+        temperature_celsius=temperature,
+        humidity_percent=humidity,
+    )
 
     logger.info(
         "Weather hydration [%s]: base=%.2fL, heat_adj=%.2fL, humidity_adj=%.2fL, total=%.2fL",
@@ -160,4 +162,3 @@ TOOL_DEFINITIONS = [
         "tags": {"fitness", "hydration", "weather"},
     },
 ]
-
