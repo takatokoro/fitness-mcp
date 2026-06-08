@@ -1,8 +1,8 @@
 """Tool 3 — Weather-Adjusted Hydration Calculator.
 
-Calls Open-Meteo via services/weather_service.py to get live temperature
-and humidity, then adjusts the base hydration target accordingly.
-Follows the same pattern as fitness_tool_1.py and fitness_tool_2_v1.py.
+Accepts a city name (e.g. "Perth") instead of raw coordinates.
+Geocoding is handled by services/weather_service.py via the free
+Open-Meteo geocoding API — no API key required.
 """
 
 import logging
@@ -10,7 +10,7 @@ import logging
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from services.weather_service import get_current_weather
+from services.weather_service import get_coordinates, get_current_weather
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,7 @@ router = APIRouter(prefix="", tags=["fitness"])
 class WeatherHydrationRequest(BaseModel):
     weight_kg: float = Field(..., gt=0, description="Body weight in kg, must be greater than 0")
     workout_minutes: int = Field(..., ge=0, description="Workout duration in minutes, must be >= 0")
-    latitude: float = Field(..., ge=-90, le=90, description="Latitude of workout location")
-    longitude: float = Field(..., ge=-180, le=180, description="Longitude of workout location")
+    city: str = Field(..., description="City name e.g. Perth, Tokyo, London, New York")
 
 
 # --- Core logic function -----------------------------------------------------
@@ -31,11 +30,15 @@ class WeatherHydrationRequest(BaseModel):
 def weather_adjusted_hydration_value(
     weight_kg: float,
     workout_minutes: int,
-    latitude: float,
-    longitude: float,
+    city: str,
 ) -> dict:
     """
-    Calculate weather-adjusted daily water intake target.
+    Calculate weather-adjusted daily water intake target from a city name.
+
+    Steps:
+      1. Geocode city name → coordinates (Open-Meteo geocoding, free)
+      2. Fetch live weather at those coordinates (Open-Meteo forecast, free)
+      3. Apply hydration formula with weather adjustments
 
     Base formula (from Tool 1):
       - 0.025L per kg body weight
@@ -48,28 +51,30 @@ def weather_adjusted_hydration_value(
     Args:
         weight_kg: User's body weight in kilograms.
         workout_minutes: Duration of workout in minutes.
-        latitude: Latitude of the user's location.
-        longitude: Longitude of the user's location.
+        city: City name as a plain string.
 
     Returns:
-        Dictionary with base target, weather data, adjustments, and final target.
+        Dictionary with base target, resolved location, weather data,
+        adjustments, and final target.
     """
     request = WeatherHydrationRequest(
         weight_kg=weight_kg,
         workout_minutes=workout_minutes,
-        latitude=latitude,
-        longitude=longitude,
+        city=city,
     )
 
-    # Base intake (same formula as Tool 1)
+    # Step 1 — Geocode city to coordinates
+    coords = get_coordinates(request.city)
+
+    # Step 2 — Fetch live weather
+    weather = get_current_weather(coords["latitude"], coords["longitude"])
+    temperature = weather["temperature_celsius"]
+    humidity = weather["relative_humidity_percent"]
+
+    # Step 3 — Base intake (same formula as Tool 1)
     base_litres = round(request.weight_kg * 0.025, 2)
     exercise_litres = round(request.workout_minutes / 60, 2)
     base_total = round(base_litres + exercise_litres, 2)
-
-    # Fetch live weather
-    weather = get_current_weather(request.latitude, request.longitude)
-    temperature = weather["temperature_celsius"]
-    humidity = weather["relative_humidity_percent"]
 
     # Weather adjustments
     heat_adjustment = 0.0
@@ -82,15 +87,20 @@ def weather_adjusted_hydration_value(
     adjusted_total = round(base_total + total_adjustment, 2)
 
     logger.info(
-        "Weather hydration: base=%.2fL, heat_adj=%.2fL, humidity_adj=%.2fL, total=%.2fL",
-        base_total, heat_adjustment, humidity_adjustment, adjusted_total,
+        "Weather hydration [%s]: base=%.2fL, heat_adj=%.2fL, humidity_adj=%.2fL, total=%.2fL",
+        coords["resolved_city"], base_total, heat_adjustment, humidity_adjustment, adjusted_total,
     )
 
     return {
         "weight_kg": request.weight_kg,
         "workout_minutes": request.workout_minutes,
-        "latitude": request.latitude,
-        "longitude": request.longitude,
+        "location": {
+            "input_city": request.city,
+            "resolved_city": coords["resolved_city"],
+            "country": coords["country"],
+            "latitude": coords["latitude"],
+            "longitude": coords["longitude"],
+        },
         "base_intake_litres": base_litres,
         "exercise_intake_litres": exercise_litres,
         "base_total_litres": base_total,
@@ -100,8 +110,8 @@ def weather_adjusted_hydration_value(
         "total_adjustment_litres": total_adjustment,
         "adjusted_daily_target_litres": adjusted_total,
         "recommendation": (
-            f"Drink at least {adjusted_total}L today. "
-            f"({temperature}°C, {humidity}% humidity at your location)"
+            f"Drink at least {adjusted_total}L today in {coords['resolved_city']}. "
+            f"({temperature}°C, {humidity}% humidity)"
         ),
     }
 
@@ -112,8 +122,7 @@ def weather_adjusted_hydration_value(
 def weather_adjusted_hydration(
     weight_kg: float,
     workout_minutes: int,
-    latitude: float,
-    longitude: float,
+    city: str,
 ):
     """
     HTTP endpoint: calculate weather-adjusted daily water intake.
@@ -121,19 +130,19 @@ def weather_adjusted_hydration(
     Args:
         weight_kg: Body weight in kilograms.
         workout_minutes: Workout duration in minutes.
-        latitude: Latitude of workout location.
-        longitude: Longitude of workout location.
+        city: City name e.g. Perth, Tokyo, London, New York.
 
     Returns:
-        JSON dict with base intake, weather data, adjustments, and final target.
+        JSON dict with resolved location, weather data, adjustments, and final target.
     """
     try:
         return weather_adjusted_hydration_value(
             weight_kg=weight_kg,
             workout_minutes=workout_minutes,
-            latitude=latitude,
-            longitude=longitude,
+            city=city,
         )
+    except ValueError as exc:
+        return {"error": str(exc), "operation": "weather_adjusted_hydration"}
     except Exception as exc:
         return {"error": str(exc), "operation": "weather_adjusted_hydration"}
 
@@ -145,7 +154,7 @@ TOOL_DEFINITIONS = [
         "name": "weather_adjusted_hydration",
         "description": (
             "Calculate daily water intake adjusted for live weather (temperature and humidity). "
-            "Requires weight, workout minutes, and location coordinates."
+            "Accepts a city name (e.g. Perth, Tokyo, London) — no coordinates needed."
         ),
         "func": weather_adjusted_hydration_value,
         "tags": {"fitness", "hydration", "weather"},
