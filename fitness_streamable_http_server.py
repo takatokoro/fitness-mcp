@@ -1,5 +1,6 @@
 """Streamable HTTP Server — Personal Fitness Assistant MCP (Version 2)."""
 
+
 import json
 import os
 import logging
@@ -8,6 +9,9 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastmcp import FastMCP
 import uvicorn
+from dotenv import load_dotenv
+load_dotenv()
+
 
 from mcp_tools import (
     water_intake_router,
