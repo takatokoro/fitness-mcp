@@ -3,6 +3,30 @@
 from __future__ import annotations
 from typing import Any, Dict
 
+# In-memory store for the most recent weather data fetched by Tool 3.
+# Updated every time weather_adjusted_hydration is called.
+# Allows Prompt 3 (ai_fitness_summary) to read current conditions
+# without making a second Open-Meteo API call.
+_weather_context: Dict[str, Any] = {
+    "status": "no_data",
+    "message": "No weather data yet. Call /weather-adjusted-hydration first.",
+}
+
+
+def update_weather_context(city: str, temperature_celsius: float, humidity_percent: int) -> None:
+    """
+    Called by fitness_tool_3 after each successful weather fetch.
+    Updates the in-memory weather_context resource.
+    """
+    global _weather_context
+    _weather_context = {
+        "status": "ok",
+        "city": city,
+        "temperature_celsius": temperature_celsius,
+        "relative_humidity_percent": humidity_percent,
+        "source": "Open-Meteo",
+    }
+
 
 def hydration_guide() -> Dict[str, Any]:
     """
@@ -84,6 +108,20 @@ def electrolyte_directory() -> Dict[str, Any]:
     }
 
 
+def weather_context() -> Dict[str, Any]:
+    """
+    Resource 3 — Weather Context.
+
+    Returns the most recent weather data fetched by Tool 3
+    (weather_adjusted_hydration). Stored in memory so Prompt 3
+    (ai_fitness_summary) can read current conditions without
+    making a second Open-Meteo API call.
+
+    Updated automatically every time Tool 3 is called.
+    """
+    return _weather_context
+
+
 RESOURCE_DEFINITIONS = [
     {
         "name": "hydration_guide",
@@ -96,5 +134,14 @@ RESOURCE_DEFINITIONS = [
         "description": "Mineral loss data through sweat and recommended recovery foods.",
         "mime_type": "application/json",
         "func": electrolyte_directory,
+    },
+    {
+        "name": "weather_context",
+        "description": (
+            "Most recent weather data from Open-Meteo fetched by Tool 3. "
+            "Call /weather-adjusted-hydration first to populate this resource."
+        ),
+        "mime_type": "application/json",
+        "func": weather_context,
     },
 ]
