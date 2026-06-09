@@ -71,9 +71,15 @@ def health():
 mcp = FastMCP.from_fastapi(
     app,
     name="Personal Fitness Assistant MCP Server",
-    instructions="Fitness tools for hydration, sweat loss, and weather-adjusted water targets.",
+    instructions=(
+        "Fitness tools available: "
+        "1. calculate_water_intake - daily water target from weight and workout. "
+        "2. estimate_sweat_loss - fluid and mineral loss from workout. "
+        "3. estimate_sweat_loss_v2 - sweat loss with recovery food data. "
+        "4. weather_adjusted_hydration - water target adjusted for live weather by city name. "
+        "Use weather_adjusted_hydration when user mentions weather, city, or location."
+    ),
 )
-
 # Resources
 @mcp.resource("resource://hydration_guide", name="Hydration Guide", mime_type="application/json")
 def _resource_hydration_guide():
