@@ -6,6 +6,8 @@ import os
 import logging
 from pathlib import Path
 
+from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi import FastAPI
 from fastmcp import FastMCP
 import uvicorn
@@ -48,6 +50,14 @@ app = FastAPI(
         "and JWT authentication."
     ),
     version="2.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Fitness tool routes
