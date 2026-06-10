@@ -75,7 +75,81 @@ def health():
     """Health check endpoint — required by Render for deployment monitoring."""
     return {"status": "ok", "version": "2.0.0"}
 
+import httpx
 
+@app.post("/ai-coaching-summary", tags=["ai"])
+async def ai_coaching_summary(
+    weight_kg: float,
+    workout_minutes: int,
+    city: str,
+    intensity_level: str = "moderate"
+):
+    """Calls Tool 1, Tool 2, Tool 3 then sends results to Mistral for a coaching summary."""
+
+    base_url = os.getenv("BASE_URL", f"http://localhost:{PORT}")
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        # Call Tool 1
+        r1 = await client.post(
+            f"{base_url}/calculate-water-intake",
+            params={"weight_kg": weight_kg, "workout_minutes": workout_minutes}
+        )
+        water_data = r1.json()
+
+        # Call Tool 2
+        r2 = await client.post(
+            f"{base_url}/estimate-sweat-loss",
+            params={"workout_duration_min": workout_minutes, "intensity_level": intensity_level}
+        )
+        sweat_data = r2.json()
+
+        # Call Tool 3
+        r3 = await client.post(
+            f"{base_url}/weather-adjusted-hydration",
+            params={"weight_kg": weight_kg, "workout_minutes": workout_minutes, "city": city}
+        )
+        weather_data = r3.json()
+
+    # Build prompt for Mistral
+    prompt = f"""You are a friendly fitness hydration coach. Write a short coaching summary (3-4 sentences) based on this data:
+
+Location: {city}
+Temperature: {weather_data.get('weather', {}).get('temperature_celsius', 'N/A')}°C
+Humidity: {weather_data.get('weather', {}).get('relative_humidity_percent', 'N/A')}%
+Body weight: {weight_kg}kg
+Workout: {workout_minutes} minutes at {intensity_level} intensity
+Adjusted water target: {weather_data.get('adjusted_daily_target_litres', 'N/A')}L
+Sodium lost: {sweat_data.get('sodium_lost_mg', 'N/A')}mg
+Potassium lost: {sweat_data.get('potassium_lost_mg', 'N/A')}mg
+Magnesium lost: {sweat_data.get('magnesium_lost_mg', 'N/A')}mg
+
+Give practical, conversational advice on hydration and recovery foods. No bullet points."""
+
+    # Call OpenRouter / Mistral
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": os.getenv("OPENROUTER_MODEL", "mistralai/mistral-7b-instruct"),
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 200
+            }
+        )
+        result = r.json()
+        coaching = result["choices"][0]["message"]["content"]
+
+    return {
+        "coaching_summary": coaching,
+        "data": {
+            "water": water_data,
+            "sweat": sweat_data,
+            "weather": weather_data
+        }
+    }
 # --- FastMCP server ----------------------------------------------------------
 
 mcp = FastMCP.from_fastapi(
