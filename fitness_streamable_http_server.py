@@ -82,7 +82,9 @@ async def call_gemini(prompt: str) -> str:
     """Helper: sends a prompt to Gemini and returns the text response."""
     async with httpx.AsyncClient(timeout=30.0) as client:
         r = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={os.getenv('GEMINI_API_KEY')}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key={os.getenv('GEMINI_API_KEY')}",
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
                 "generationConfig": {"maxOutputTokens": 200}
             }
         )
