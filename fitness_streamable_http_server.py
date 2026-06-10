@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi import FastAPI
 from fastmcp import FastMCP
+import httpx
 import uvicorn
 from dotenv import load_dotenv
 load_dotenv()
@@ -76,7 +77,22 @@ def health():
     """Health check endpoint — required by Render for deployment monitoring."""
     return {"status": "ok", "version": "2.0.0"}
 
-import httpx
+
+async def call_gemini(prompt: str) -> str:
+    """Helper: sends a prompt to Gemini and returns the text response."""
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.getenv('GEMINI_API_KEY')}",
+            json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"maxOutputTokens": 200}
+            }
+        )
+        result = r.json()
+        if "candidates" not in result:
+            raise Exception(f"Gemini error: {result}")
+        return result["candidates"][0]["content"]["parts"][0]["text"]
+
 
 @app.post("/ai-coaching-summary", tags=["ai"])
 async def ai_coaching_summary(
@@ -85,33 +101,29 @@ async def ai_coaching_summary(
     city: str,
     intensity_level: str = "moderate"
 ):
-    """Calls Tool 1, Tool 2, Tool 3 then sends results to Mistral for a coaching summary."""
+    """Calls Tool 1, Tool 2, Tool 3 then sends results to Gemini for a coaching summary."""
 
     base_url = os.getenv("BASE_URL", f"http://localhost:{PORT}")
 
     async with httpx.AsyncClient(timeout=30.0) as client:
-        # Call Tool 1
         r1 = await client.post(
             f"{base_url}/calculate-water-intake",
             params={"weight_kg": weight_kg, "workout_minutes": workout_minutes}
         )
         water_data = r1.json()
 
-        # Call Tool 2
         r2 = await client.post(
             f"{base_url}/estimate-sweat-loss",
             params={"workout_duration_min": workout_minutes, "intensity_level": intensity_level}
         )
         sweat_data = r2.json()
 
-        # Call Tool 3
         r3 = await client.post(
             f"{base_url}/weather-adjusted-hydration",
             params={"weight_kg": weight_kg, "workout_minutes": workout_minutes, "city": city}
         )
         weather_data = r3.json()
 
-    # Build prompt for Mistral
     prompt = f"""You are a friendly fitness hydration coach. Write a short coaching summary (3-4 sentences) based on this data:
 
 Location: {city}
@@ -126,19 +138,8 @@ Magnesium lost: {sweat_data.get('magnesium_lost_mg', 'N/A')}mg
 
 Give practical, conversational advice on hydration and recovery foods. No bullet points."""
 
-# Call Gemini
-async with httpx.AsyncClient(timeout=30.0) as client:
-    r = await client.post(
-        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.getenv('GEMINI_API_KEY')}",
-        json={
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {"maxOutputTokens": 200}
-        }
-    )
-    result = r.json()
-    if "candidates" not in result:
-        raise Exception(f"Gemini error: {result}")
-    coaching = result["candidates"][0]["content"]["parts"][0]["text"]
+    coaching = await call_gemini(prompt)
+
     return {
         "coaching_summary": coaching,
         "data": {
@@ -147,13 +148,16 @@ async with httpx.AsyncClient(timeout=30.0) as client:
             "weather": weather_data
         }
     }
+
+
 class CoachingRequest(BaseModel):
     tool_result: str
     context: str = ""
 
+
 @app.post("/ai-coaching-summary-simple", tags=["ai"])
 async def ai_coaching_summary_simple(body: CoachingRequest):
-    """Takes any tool result JSON and returns a Mistral coaching tip."""
+    """Takes any tool result JSON and returns a Gemini coaching tip."""
 
     prompt = f"""You are a friendly fitness hydration coach. Write a short coaching tip (2-3 sentences) based on this fitness data:
 
@@ -163,25 +167,10 @@ Additional context: {body.context}
 
 Be conversational and practical. No bullet points."""
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        r = await client.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": os.getenv("OPENROUTER_MODEL", "mistralai/mistral-7b-instruct:free"),
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 150
-            }
-        )
-        result = r.json()
-        if "choices" not in result:
-            raise Exception(f"OpenRouter error: {result}")
-        coaching = result["choices"][0]["message"]["content"]
-
+    coaching = await call_gemini(prompt)
     return {"coaching_summary": coaching}
+
+
 # --- FastMCP server ----------------------------------------------------------
 
 mcp = FastMCP.from_fastapi(
@@ -196,6 +185,7 @@ mcp = FastMCP.from_fastapi(
         "Use weather_adjusted_hydration when user mentions weather, city, or location."
     ),
 )
+
 # Resources
 @mcp.resource("resource://hydration_guide", name="Hydration Guide", mime_type="application/json")
 def _resource_hydration_guide():
