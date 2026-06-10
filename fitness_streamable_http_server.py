@@ -126,25 +126,19 @@ Magnesium lost: {sweat_data.get('magnesium_lost_mg', 'N/A')}mg
 
 Give practical, conversational advice on hydration and recovery foods. No bullet points."""
 
-    # Call OpenRouter / Mistral
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        r = await client.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "model": os.getenv("OPENROUTER_MODEL", "mistralai/mistral-7b-instruct"),
-                "messages": [{"role": "user", "content": prompt}],
-                "max_tokens": 200
-            }
-        )
-        result = r.json()
-        if "choices" not in result:
-            raise Exception(f"OpenRouter error: {result}")
-        coaching = result["choices"][0]["message"]["content"]
-
+# Call Gemini
+async with httpx.AsyncClient(timeout=30.0) as client:
+    r = await client.post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={os.getenv('GEMINI_API_KEY')}",
+        json={
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"maxOutputTokens": 200}
+        }
+    )
+    result = r.json()
+    if "candidates" not in result:
+        raise Exception(f"Gemini error: {result}")
+    coaching = result["candidates"][0]["content"]["parts"][0]["text"]
     return {
         "coaching_summary": coaching,
         "data": {
