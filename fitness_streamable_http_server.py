@@ -5,6 +5,7 @@ import json
 import os
 import logging
 from pathlib import Path
+from pydantic import BaseModel
 
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -140,6 +141,8 @@ Give practical, conversational advice on hydration and recovery foods. No bullet
             }
         )
         result = r.json()
+        if "choices" not in result:
+            raise Exception(f"OpenRouter error: {result}")
         coaching = result["choices"][0]["message"]["content"]
 
     return {
@@ -150,6 +153,41 @@ Give practical, conversational advice on hydration and recovery foods. No bullet
             "weather": weather_data
         }
     }
+class CoachingRequest(BaseModel):
+    tool_result: str
+    context: str = ""
+
+@app.post("/ai-coaching-summary-simple", tags=["ai"])
+async def ai_coaching_summary_simple(body: CoachingRequest):
+    """Takes any tool result JSON and returns a Mistral coaching tip."""
+
+    prompt = f"""You are a friendly fitness hydration coach. Write a short coaching tip (2-3 sentences) based on this fitness data:
+
+{body.tool_result}
+
+Additional context: {body.context}
+
+Be conversational and practical. No bullet points."""
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        r = await client.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": os.getenv("OPENROUTER_MODEL", "mistralai/mistral-7b-instruct:free"),
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 150
+            }
+        )
+        result = r.json()
+        if "choices" not in result:
+            raise Exception(f"OpenRouter error: {result}")
+        coaching = result["choices"][0]["message"]["content"]
+
+    return {"coaching_summary": coaching}
 # --- FastMCP server ----------------------------------------------------------
 
 mcp = FastMCP.from_fastapi(
